@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LOST ARK - 리디자인 메인</title>
+    <!-- 폰트 및 아이콘 라이브러리 (Preconnect 최적화) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js" crossorigin="anonymous"></script>
+
+    <style>
+        /* =========================================================
+           1. 기본 디자인 토큰 & 테마 변수 (Lost Ark Color Scheme)
+           ========================================================= */
+        :root {
+            /* 배경 및 레이어 색상 (로스트아크 다크 톤) */
+            --bg-dark: #0b0f19;
+            --bg-card: #121826;
+            --bg-card-glass: rgba(18, 24, 38, 0.75);
+            
+            /* 주 포인트 색상 (골드 / 시안 / 화이트) */
+            --primary-gold: #d4a359;
+            --primary-gold-hover: #f1c40f;
+            --accent-cyan: #00f2fe;
+            --text-light: #f3f4f6;
+            --text-muted: #9ca3af;
+            --text-dark: #111827;
+
+            /* 글래스모피즘 테두리 & 그림자 */
+            --glass-border: rgba(212, 163, 89, 0.25);
+            --glass-blur: blur(12px);
+
+            /* 뉴모피즘 전용 입체 그림자 효과 */
+            --neumorph-outer: 6px 6px 14px rgba(0, 0, 0, 0.6), -4px -4px 10px rgba(255, 255, 255, 0.03);
+            --neumorph-inner: inset 3px 3px 6px rgba(0, 0, 0, 0.8), inset -3px -3px 6px rgba(255, 255, 255, 0.05);
+
+            /* 기본 트랜지션 속도 */
+            --transition-speed: 0.3s;
+        }
+
+        /* =========================================================
+           2. 리셋 및 기본 스타일에 대한 설정
+           ========================================================= */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Noto Sans KR', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            min-height: 100vh;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(0, 242, 254, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(212, 163, 89, 0.08) 0%, transparent 50%);
+            background-attachment: fixed;
+        }
+
+        /* 웹 접근성: 키보드 포커스 시 명확한 테두리 표시 */
+        a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible {
+            outline: 3px solid var(--accent-cyan);
+            outline-offset: 3px;
+            border-radius: 4px;
+        }
+
+        /* =========================================================
+           3. 헤더 및 네비게이션 (글래스모피즘 + 반응형)
+           ========================================================= */
+        .header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--bg-card-glass);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border-bottom: 1px solid var(--glass-border);
+            padding: 0.8rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            color: var(--primary-gold);
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px rgba(212, 163, 89, 0.4);
+        }
+
+        .nav-desktop {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .nav-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-light);
+            font-size: 1rem;
+            font-weight: 500;
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all var(--transition-speed) ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* 뉴모피즘 상태 버튼 스타일 */
+        .nav-btn:hover {
+            color: var(--primary-gold);
+            box-shadow: var(--neumorph-outer);
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .nav-btn.active {
+            color: var(--primary-gold);
+            box-shadow: var(--neumorph-inner);
+            border: 1px solid var(--glass-border);
+            background: rgba(0,0,0,0.2);
+        }
+
+        /* 모바일 햄버거 메뉴 버튼 */
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--primary-gold);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+        }
+
+        /* =========================================================
+           4. 좌측 슬라이드 이벤트 드로어 (마우스 오버 / 클릭 지원)
+           ========================================================= */
+        .event-drawer-wrapper {
+            position: fixed;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 200;
+            display: flex;
+            align-items: center;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* 마우스 호버 시 또는 클래스 추가 시 슬라이드 오픈 */
+        .event-drawer-trigger {
+            background: linear-gradient(135deg, var(--primary-gold), #8a6529);
+            color: #000;
+            padding: 1.2rem 0.6rem;
+            border-radius: 0 12px 12px 0;
+            font-weight: bold;
+            cursor: pointer;
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            letter-spacing: 2px;
+            box-shadow: 4px 0 15px rgba(212, 163, 89, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: background 0.3s;
+        }
+
+        .event-drawer-content {
+            width: 320px;
+            background: rgba(15, 21, 35, 0.92);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-left: none;
+            border-radius: 0 16px 16px 0;
+            padding: 1.5rem;
+            box-shadow: 10px 0 30px rgba(0, 0, 0, 0.8);
+            transform: translateX(-100%);
+            transition: transform 0.4s ease;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        /* 패널에 마우스 호버 또는 'open' 클래스 활성화 상태 */
+        .event-drawer-wrapper:hover .event-drawer-content,
+        .event-drawer-wrapper.open .event-drawer-content {
+            transform: translateX(0);
+        }
+
+        .event-card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: var(--neumorph-outer);
+            transition: transform 0.2s ease;
+        }
+
+        .event-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--primary-gold);
+        }
+
+        .event-badge {
+            display: inline-block;
+            background: rgba(0, 242, 254, 0.15);
+            color: var(--accent-cyan);
+            font-size: 0.75rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .event-title {
+            font-size: 1rem;
+            font-weight: bold;
+            margin-bottom: 0.4rem;
+            color: var(--text-light);
+        }
+
+        .event-timer {
+            font-size: 0.8rem;
+            color: var(--primary-gold);
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        /* =========================================================
+           5. 메인 레이아웃 및 View 템플릿 (SPA 구조)
+           ========================================================= */
+        main {
+            flex: 1;
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+        }
+
+        /* 각 메인 View 섹션 스타일 */
+        .view-section {
+            display: none; /* 기본 숨김, JS로 컨트롤 */
+            animation: fadeIn 0.4s ease-in-out forwards;
+        }
+
+        .view-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* =========================================================
+           6. [메인 화면] 전용 컴포넌트
+           ========================================================= */
+        .hero-banner {
+            background: linear-gradient(180deg, rgba(11,15,25,0.2) 0%, rgba(11,15,25,0.9) 100%),
+                        url('https://placehold.co/1200x400/121826/d4a359?text=LOST+ARK+NEW+UPDATE') center/cover;
+            border-radius: 20px;
+            padding: 4rem 2rem 2rem 2rem;
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--neumorph-outer);
+            margin-bottom: 2.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            min-height: 320px;
+        }
+
+        .hero-title {
+            font-size: 2.2rem;
+            color: #fff;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+        }
+
+        .hero-desc {
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+            max-width: 600px;
+        }
+
+        /* 메인화면 그리드 (공지사항/자유게시판 빠른이동) */
+        .shortcut-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .glass-card {
+            background: var(--bg-card-glass);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: var(--neumorph-outer);
+            transition: all 0.3s ease;
+        }
+
+        .glass-card:hover {
+            border-color: var(--primary-gold);
+            transform: translateY(-5px);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            color: var(--primary-gold);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .more-link {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .more-link:hover {
+            color: var(--accent-cyan);
+        }
+
+        .preview-list {
+            list-style: none;
+        }
+
+        .preview-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.7rem 0;
+            border-bottom: 1px dashed rgba(255,255,255,0.05);
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .preview-item:hover {
+            color: var(--primary-gold-hover);
+        }
+
+        .preview-item-title {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 70%;
+        }
+
+        .preview-item-date {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        /* =========================================================
+           7. [공지사항 / 자유게시판] 컴포넌트
+           ========================================================= */
+        .board-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 0.5rem;
+            background: rgba(0,0,0,0.3);
+            padding: 0.3rem;
+            border-radius: 10px;
+            box-shadow: var(--neumorph-inner);
+        }
+
+        .filter-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .filter-btn.active {
+            background: var(--primary-gold);
+            color: #000;
+            font-weight: bold;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 0.5rem;
+            background: var(--bg-card);
+            padding: 0.4rem 0.8rem;
+            border-radius: 10px;
+            box-shadow: var(--neumorph-inner);
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .search-box input {
+            background: transparent;
+            border: none;
+            color: #fff;
+            outline: none;
+            width: 180px;
+        }
+
+        /* 테이블 스타일 */
+        .custom-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        .custom-table th, .custom-table td {
+            padding: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .custom-table th {
+            color: var(--primary-gold);
+            font-weight: bold;
+            background: rgba(0,0,0,0.2);
+        }
+
+        .custom-table tbody tr {
+            transition: background 0.2s;
+            cursor: pointer;
+        }
+
+        .custom-table tbody tr:hover {
+            background: rgba(212, 163, 89, 0.05);
+        }
+
+        .btn-action {
+            background: linear-gradient(135deg, var(--primary-gold), #b8860b);
+            color: #000;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: var(--neumorph-outer);
+            transition: all 0.2s;
+        }
+
+        .btn-action:hover {
+            background: var(--primary-gold-hover);
+            transform: translateY(-2px);
+        }
+
+        /* =========================================================
+           8. 모달 (글쓰기 / 상세보기)
+           ========================================================= */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(8px);
+            z-index: 300;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            width: 100%;
+            max-width: 550px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.9);
+        }
+
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--primary-gold);
+        }
+
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 0.8rem;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: #fff;
+            box-shadow: var(--neumorph-inner);
+        }
+
+        /* =========================================================
+           9. 푸터
+           ========================================================= */
+        footer {
+            background: rgba(7, 10, 18, 0.95);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            text-align: center;
+            padding: 2rem;
+            margin-top: auto;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        /* =========================================================
+           10. 모바일 레이아웃 최적화 (Responsive Design)
+           ========================================================= */
+        @media (max-width: 768px) {
+            .nav-desktop {
+                position: fixed;
+                top: 60px;
+                right: -100%;
+                width: 70%;
+                height: calc(100vh - 60px);
+                background: var(--bg-card-glass);
+                backdrop-filter: blur(20px);
+                flex-direction: column;
+                padding: 2rem 1rem;
+                transition: right 0.3s ease;
+                box-shadow: -5px 0 15px rgba(0,0,0,0.5);
+            }
+
+            .nav-desktop.mobile-open {
+                right: 0;
+            }
+
+            .mobile-menu-btn {
+                display: block;
+            }
+
+            .hero-banner {
+                padding: 2rem 1rem 1.5rem 1rem;
+                min-height: 240px;
+            }
+
+            .hero-title {
+                font-size: 1.5rem;
+            }
+
+            .custom-table th:nth-child(3), .custom-table td:nth-child(3) {
+                display: none; /* 모바일에서 날짜 열 숨김으로 가독성 확보 */
+            }
+
+            .event-drawer-wrapper {
+                top: auto;
+                bottom: 20px;
+                transform: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ==========================================
+         상단 네비게이션 바 (글래스모피즘 헤더)
+         ========================================== -->
+    <header class="header">
+        <a href="#" class="logo" onclick="switchView('main-view')">
+            <i class="fa-solid fa-shield-halved"></i> LOST ARK
+        </a>
+
+        <!-- 데스크톱 & 모바일 겸용 네비게이션 메뉴 -->
+        <nav class="nav-desktop" id="navMenu">
+            <button class="nav-btn active" onclick="switchView('main-view', this)">
+                <i class="fa-solid fa-house"></i> 메인화면
+            </button>
+            <button class="nav-btn" onclick="switchView('notice-view', this)">
+                <i class="fa-solid fa-bullhorn"></i> 공지사항
+            </button>
+            <button class="nav-btn" onclick="switchView('board-view', this)">
+                <i class="fa-solid fa-comments"></i> 자유게시판
+            </button>
+        </nav>
+
+        <!-- 모바일 토글 버튼 -->
+        <button class="mobile-menu-btn" onclick="toggleMobileMenu()" aria-label="메뉴 열기">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+    </header>
+
+    <!-- ==========================================
+         좌측 슬라이드 패널: 진행 중인 이벤트 (2-3개)
+         ========================================== -->
+    <aside class="event-drawer-wrapper" id="eventDrawer">
+        <div class="event-drawer-trigger" onclick="toggleEventDrawer()" role="button" tabindex="0" aria-label="진행중인 이벤트 보기">
+            <i class="fa-solid fa-gift"></i> EVENT
+        </div>
+        <div class="event-drawer-content">
+            <h3 style="color: var(--primary-gold); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fa-solid fa-fire"></i> 진행 중인 이벤트
+            </h3>
+            
+            <!-- 이벤트 카드 1 -->
+            <div class="event-card">
+                <span class="event-badge">HOT</span>
+                <div class="event-title">아크라시아 카오스 게이트 오픈</div>
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">전설 보석 및 특별 아바타 획득 기회!</p>
+                <div class="event-timer"><i class="fa-regular fa-clock"></i> 남은 시간: 12일 04시간</div>
+            </div>
+
+            <!-- 이벤트 카드 2 -->
+            <div class="event-card">
+                <span class="event-badge">NEW</span>
+                <div class="event-title">신규/복귀 모험가 출석부</div>
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">매일 접속만 해도 벼련 재료 대량 지급</p>
+                <div class="event-timer"><i class="fa-regular fa-clock"></i> 남은 시간: 25일 18시간</div>
+            </div>
+
+            <!-- 이벤트 카드 3 -->
+            <div class="event-card">
+                <span class="event-badge" style="background: rgba(212,163,89,0.2); color: var(--primary-gold);">ALWAYS</span>
+                <div class="event-title">주말 핫타임 버프 이벤트</div>
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">전투 경험치 100% & 전투 실링 증대</p>
+                <div class="event-timer"><i class="fa-regular fa-clock"></i> 매주 주말 진행</div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ==========================================
+         메인 영역 (SPA 형태: JS로 View 전환)
+         ========================================== -->
+    <main>
+        <!-- 1. 메인화면 View -->
+        <section id="main-view" class="view-section active">
+            <!-- 히어로 롤링 배너 -->
+            <div class="hero-banner">
+                <span class="event-badge" style="width: fit-content;">UPDATE</span>
+                <h1 class="hero-title">신규 군단장 레이드 업데이트</h1>
+                <p class="hero-desc">어둠의 심연 속에서 새로운 시련이 시작됩니다. 모험가여, 빛을 지켜내십시오.</p>
+                <div>
+                    <button class="btn-action" onclick="switchView('notice-view')">자세히 보기</button>
+                </div>
+            </div>
+
+            <!-- 공지사항 및 자유게시판 프리뷰 카드 -->
+            <div class="shortcut-grid">
+                <!-- 공지사항 미리보기 -->
+                <div class="glass-card">
+                    <div class="card-header">
+                        <h2 class="card-title"><i class="fa-solid fa-scroll"></i> 최신 공지사항</h2>
+                        <button class="more-link" onclick="switchView('notice-view')">더보기 +</button>
+                    </div>
+                    <ul class="preview-list">
+                        <li class="preview-item" onclick="switchView('notice-view')">
+                            <span class="preview-item-title">[점검] 10월 30일(목) 정기점검 안내</span>
+                            <span class="preview-item-date">10.29</span>
+                        </li>
+                        <li class="preview-item" onclick="switchView('notice-view')">
+                            <span class="preview-item-title">[업데이트] 클래스 밸런스 패치 노트</span>
+                            <span class="preview-item-date">10.25</span>
+                        </li>
+                        <li class="preview-item" onclick="switchView('notice-view')">
+                            <span class="preview-item-title">[이벤트] 가을맞이 럭키 드로우 당첨자 발표</span>
+                            <span class="preview-item-date">10.20</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- 자유게시판 미리보기 -->
+                <div class="glass-card">
+                    <div class="card-header">
+                        <h2 class="card-title"><i class="fa-solid fa-fire-flame-curved"></i> 인기 게시글</h2>
+                        <button class="more-link" onclick="switchView('board-view')">더보기 +</button>
+                    </div>
+                    <ul class="preview-list">
+                        <li class="preview-item" onclick="switchView('board-view')">
+                            <span class="preview-item-title">이번 신규 레이드 트라이 팟 구합니다!</span>
+                            <span class="preview-item-date">14:20</span>
+                        </li>
+                        <li class="preview-item" onclick="switchView('board-view')">
+                            <span class="preview-item-title">커스텀 아바타 세팅 공유해드림 (스샷유)</span>
+                            <span class="preview-item-date">12:05</span>
+                        </li>
+                        <li class="preview-item" onclick="switchView('board-view')">
+                            <span class="preview-item-title">초보를 위한 각인 효율 완벽 정리</span>
+                            <span class="preview-item-date">10.28</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. 공지사항 View -->
+        <section id="notice-view" class="view-section">
+            <h2 style="color: var(--primary-gold); margin-bottom: 1.5rem;"><i class="fa-solid fa-bullhorn"></i> 공지사항</h2>
+            
+            <div class="board-controls">
+                <div class="filter-tabs">
+                    <button class="filter-btn active" onclick="filterNotice('all', this)">전체</button>
+                    <button class="filter-btn" onclick="filterNotice('notice', this)">공지</button>
+                    <button class="filter-btn" onclick="filterNotice('maint', this)">점검</button>
+                    <button class="filter-btn" onclick="filterNotice('update', this)">업데이트</button>
+                </div>
+            </div>
+
+            <div class="glass-card" style="padding: 0.5rem;">
+                <table class="custom-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 15%;">분류</th>
+                            <th>제목</th>
+                            <th style="width: 20%;">작성일</th>
+                        </tr>
+                    </thead>
+                    <tbody id="noticeTableBody">
+                        <!-- JS로 동적 생성 및 필터링됨 -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- 3. 자유게시판 View -->
+        <section id="board-view" class="view-section">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+                <h2 style="color: var(--primary-gold);"><i class="fa-solid fa-comments"></i> 자유게시판</h2>
+                <button class="btn-action" onclick="openWriteModal()"><i class="fa-solid fa-pen"></i> 글쓰기</button>
+            </div>
+
+            <div class="board-controls">
+                <div class="search-box">
+                    <i class="fa-solid fa-magnifying-glass" style="color: var(--text-muted); margin-top: 3px;"></i>
+                    <input type="text" id="boardSearch" placeholder="제목/작성자 검색..." onkeyup="searchBoard()">
+                </div>
+            </div>
+
+            <div class="glass-card" style="padding: 0.5rem;">
+                <table class="custom-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 10%;">번호</th>
+                            <th>제목</th>
+                            <th style="width: 20%;">작성자</th>
+                            <th style="width: 15%;">작성일</th>
+                        </tr>
+                    </thead>
+                    <tbody id="boardTableBody">
+                        <!-- JS로 동적 생성 및 검색 처리 -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <!-- ==========================================
+         글쓰기 모달 (Modal)
+         ========================================== -->
+    <div class="modal-overlay" id="writeModal">
+        <div class="modal-content">
+            <h3 style="color: var(--primary-gold); margin-bottom: 1rem;"><i class="fa-solid fa-pen-to-square"></i> 게시글 작성</h3>
+            <form onsubmit="handleWriteSubmit(event)">
+                <div class="form-group">
+                    <label for="postTitle">제목</label>
+                    <input type="text" id="postTitle" required placeholder="제목을 입력하세요">
+                </div>
+                <div class="form-group">
+                    <label for="postAuthor">작성자</label>
+                    <input type="text" id="postAuthor" required placeholder="닉네임">
+                </div>
+                <div class="form-group">
+                    <label for="postContent">내용</label>
+                    <textarea id="postContent" rows="5" required placeholder="내용을 작성해주세요"></textarea>
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 0.5rem;">
+                    <button type="button" class="btn-action" style="background: #4b5563; color: #fff;" onclick="closeWriteModal()">취소</button>
+                    <button type="submit" class="btn-action">등록</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 푸터 -->
+    <footer>
+        <p>© Smilegate RPG & Lost Ark Modern Redesign. All rights reserved.</p>
+        <p style="margin-top: 0.5rem; color: #6b7280;">본 페이지는 초보자 학습 및 포트폴리오 목적으로 재구성된 시안 웹사이트입니다.</p>
+    </footer>
+
+    <!-- ==========================================
+         JavaScript 로직 (초보자 쉬운 주석 포함)
+         ========================================== -->
+    <script>
+        /* -------------------------------------------------------------
+           1. 공지사항 및 게시판 샘플 데이터 설정
+           ------------------------------------------------------------- */
+        const noticeData = [
+            { id: 1, category: 'maint', type: '점검', title: '10월 30일(목) 정기점검 및 서비스 안정화 작업 안내', date: '2026.10.29' },
+            { id: 2, category: 'update', type: '업데이트', title: '클래스 밸런스 패치 및 편의성 개선 사항 적용', date: '2026.10.25' },
+            { id: 3, category: 'notice', type: '공지', title: '불법 프로그램 사용 제재 내역 34차 안내', date: '2026.10.22' },
+            { id: 4, category: 'update', type: '업데이트', title: '신규 군단장 레이드 난이도 조율 및 보상 변경', date: '2026.10.15' }
+        ];
+
+        let boardData = [
+            { id: 3, title: '이번 신규 레이드 트라이 팟 구합니다! (바드/홀나 환영)', author: '빛의수호자', date: '14:20' },
+            { id: 2, title: '커스텀 아바타 세팅 공유해드림 (스샷 첨부)', author: '아크라시아패셔니스타', date: '12:05' },
+            { id: 1, title: '초보를 위한 각인 효율 완벽 정리 가이드', author: '고인물강아지', date: '2026.10.28' }
+        ];
+
+        /* -------------------------------------------------------------
+           2. SPA View (페이지) 전환 로직
+           ------------------------------------------------------------- */
+        function switchView(viewId, targetBtn = null) {
+            // 모든 섹션 숨기기
+            const sections = document.querySelectorAll('.view-section');
+            sections.forEach(sec => sec.classList.remove('active'));
+
+            // 선택된 섹션 보이기
+            const activeSection = document.getElementById(viewId);
+            if (activeSection) {
+                activeSection.classList.add('active');
+            }
+
+            // 상단 버튼 Active 클래스 관리
+            if (targetBtn) {
+                const navBtns = document.querySelectorAll('.nav-btn');
+                navBtns.forEach(btn => btn.classList.remove('active'));
+                targetBtn.classList.add('active');
+            }
+
+            // 모바일 메뉴가 열려있다면 닫기
+            document.getElementById('navMenu').classList.remove('mobile-open');
+
+            // 페이지 상단으로 부드럽게 스크롤 이동
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        /* -------------------------------------------------------------
+           3. 모바일 네비게이션 드로어 토글
+           ------------------------------------------------------------- */
+        function toggleMobileMenu() {
+            const navMenu = document.getElementById('navMenu');
+            navMenu.classList.toggle('mobile-open');
+        }
+
+        /* -------------------------------------------------------------
+           4. 좌측 이벤트 패널 토글 (터치/클릭 대응)
+           ------------------------------------------------------------- */
+        function toggleEventDrawer() {
+            const drawer = document.getElementById('eventDrawer');
+            drawer.classList.toggle('open');
+        }
+
+        /* -------------------------------------------------------------
+           5. 공지사항 데이터 동적 렌더링 & 필터링
+           ------------------------------------------------------------- */
+        function renderNotices(filter = 'all') {
+            const tbody = document.getElementById('noticeTableBody');
+            tbody.innerHTML = '';
+
+            const filtered = filter === 'all' 
+                ? noticeData 
+                : noticeData.filter(item => item.category === filter);
+
+            filtered.forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><span class="event-badge">${item.type}</span></td>
+                    <td style="color: var(--text-light); font-weight: 500;">${item.title}</td>
+                    <td style="color: var(--text-muted);">${item.date}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function filterNotice(category, btnElement) {
+            // 필터 버튼 활성화 표시
+            const filterBtns = document.querySelectorAll('.filter-tabs .filter-btn');
+            filterBtns.forEach(b => b.classList.remove('active'));
+            btnElement.classList.add('active');
+
+            renderNotices(category);
+        }
+
+        /* -------------------------------------------------------------
+           6. 자유게시판 동적 렌더링 & 검색 로직
+           ------------------------------------------------------------- */
+        function renderBoard(dataToRender = boardData) {
+            const tbody = document.getElementById('boardTableBody');
+            tbody.innerHTML = '';
+
+            dataToRender.forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td style="color: var(--text-muted);">${item.id}</td>
+                    <td style="color: var(--text-light); font-weight: 500;">${item.title}</td>
+                    <td style="color: var(--primary-gold);">${item.author}</td>
+                    <td style="color: var(--text-muted);">${item.date}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function searchBoard() {
+            const query = document.getElementById('boardSearch').value.toLowerCase();
+            const filtered = boardData.filter(item => 
+                item.title.toLowerCase().includes(query) || 
+                item.author.toLowerCase().includes(query)
+            );
+            renderBoard(filtered);
+        }
+
+        /* -------------------------------------------------------------
+           7. 모달 처리 (글쓰기 창 열기/닫기/등록)
+           ------------------------------------------------------------- */
+        function openWriteModal() {
+            document.getElementById('writeModal').classList.add('active');
+        }
+
+        function closeWriteModal() {
+            document.getElementById('writeModal').classList.remove('active');
+        }
+
+        function handleWriteSubmit(event) {
+            event.preventDefault(); // 폼 제출 시 페이지 새로고침 방지
+
+            const title = document.getElementById('postTitle').value;
+            const author = document.getElementById('postAuthor').value;
+
+            // 새로운 게시글 데이터 생성 후 최상단에 추가
+            const newPost = {
+                id: boardData.length + 1,
+                title: title,
+                author: author,
+                date: '방금 전'
+            };
+
+            boardData.unshift(newPost); // 배열 제일 앞에 추가
+            renderBoard(); // 테이블 다시 그리기
+            closeWriteModal(); // 모달 닫기
+
+            // Input 입력값 초기화
+            document.getElementById('postTitle').value = '';
+            document.getElementById('postAuthor').value = '';
+            document.getElementById('postContent').value = '';
+        }
+
+        /* -------------------------------------------------------------
+           8. 페이지 초기화 시 호출
+           ------------------------------------------------------------- */
+        window.onload = function() {
+            renderNotices();
+            renderBoard();
+        };
+    </script>
+</body>
+</html>
