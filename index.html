@@ -148,20 +148,19 @@
         }
 
         /* =========================================================
-           4. 좌측 슬라이드 이벤트 드로어 (마우스 오버 / 클릭 지원)
+           4. 좌측 슬라이드 이벤트 드로어 (좌측 여백 확보 및 z-index 조정)
            ========================================================= */
         .event-drawer-wrapper {
             position: fixed;
             left: 0;
             top: 50%;
             transform: translateY(-50%);
-            z-index: 200;
+            z-index: 250; /* 레이아웃 요소 위로 떠오르되 상단 메뉴보다 안정적으로 위치 */
             display: flex;
             align-items: center;
             transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        /* 마우스 호버 시 또는 클래스 추가 시 슬라이드 오픈 */
         .event-drawer-trigger {
             background: linear-gradient(135deg, var(--primary-gold), #8a6529);
             color: #000;
@@ -180,8 +179,8 @@
         }
 
         .event-drawer-content {
-            width: 320px;
-            background: rgba(15, 21, 35, 0.92);
+            width: 300px;
+            background: rgba(15, 21, 35, 0.95);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
             border: 1px solid var(--glass-border);
@@ -195,7 +194,7 @@
             overflow-y: auto;
         }
 
-        /* 패널에 마우스 호버 또는 'open' 클래스 활성화 상태 */
+        /* 호버 또는 클릭 시 슬라이드 패널 오픈 */
         .event-drawer-wrapper:hover .event-drawer-content,
         .event-drawer-wrapper.open .event-drawer-content {
             transform: translateX(0);
@@ -228,7 +227,7 @@
         }
 
         .event-title {
-            font-size: 1rem;
+            font-size: 0.95rem;
             font-weight: bold;
             margin-bottom: 0.4rem;
             color: var(--text-light);
@@ -243,19 +242,18 @@
         }
 
         /* =========================================================
-           5. 메인 레이아웃 및 View 템플릿 (SPA 구조)
+           5. 메인 레이아웃 (좌측 이벤트 트리거와 겹치지 않도록 서브 마진 부여)
            ========================================================= */
         main {
             flex: 1;
             max-width: 1200px;
             width: 100%;
             margin: 0 auto;
-            padding: 2rem 1.5rem;
+            padding: 2rem 1.5rem 2rem 3.5rem; /* 좌측에 여백을 더 주어 사이드 트리거와 거리 확보 */
         }
 
-        /* 각 메인 View 섹션 스타일 */
         .view-section {
-            display: none; /* 기본 숨김, JS로 컨트롤 */
+            display: none;
             animation: fadeIn 0.4s ease-in-out forwards;
         }
 
@@ -269,24 +267,191 @@
         }
 
         /* =========================================================
-           6. [메인 화면] 전용 컴포넌트
+           6. [신규] 미래지향 인터랙티브 로드맵 섹션
+           ========================================================= */
+        .roadmap-container {
+            background: var(--bg-card-glass);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2.5rem;
+            box-shadow: var(--neumorph-outer);
+            position: relative;
+            overflow: hidden;
+            cursor: e-resize; /* 오른쪽으로 이끄는 마우스 커서 아이콘 */
+            user-select: none;
+        }
+
+        .roadmap-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .roadmap-title {
+            font-size: 1.4rem;
+            color: var(--primary-gold);
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .roadmap-hint {
+            font-size: 0.85rem;
+            color: var(--accent-cyan);
+            background: rgba(0, 242, 254, 0.1);
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            border: 1px solid rgba(0, 242, 254, 0.2);
+            animation: pulseHint 2s infinite;
+        }
+
+        @keyframes pulseHint {
+            0%, 100% { opacity: 0.8; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.03); }
+        }
+
+        /* 진행 상황 게이지 바 */
+        .roadmap-progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            margin-bottom: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .roadmap-progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--primary-gold), var(--accent-cyan));
+            border-radius: 3px;
+            transition: width 0.15s ease-out;
+        }
+
+        /* 로드맵 카드 슬라이더 디스플레이 */
+        .roadmap-card-display {
+            background: rgba(11, 15, 25, 0.8);
+            border-radius: 16px;
+            padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: var(--neumorph-inner);
+            min-height: 220px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .roadmap-card-content {
+            opacity: 1;
+            transform: translateX(0);
+            transition: all 0.3s ease;
+        }
+
+        .roadmap-card-content.fade-change {
+            opacity: 0;
+            transform: translateX(20px);
+        }
+
+        .roadmap-status-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.3rem 0.8rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-bottom: 0.8rem;
+            width: fit-content;
+        }
+
+        .tag-present {
+            background: rgba(212, 163, 89, 0.2);
+            color: var(--primary-gold);
+            border: 1px solid var(--primary-gold);
+        }
+
+        .tag-future {
+            background: rgba(0, 242, 254, 0.15);
+            color: var(--accent-cyan);
+            border: 1px solid var(--accent-cyan);
+        }
+
+        .roadmap-card-title {
+            font-size: 1.6rem;
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 0.6rem;
+        }
+
+        .roadmap-card-desc {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        .roadmap-card-date {
+            font-size: 0.85rem;
+            color: var(--primary-gold);
+            font-weight: 500;
+        }
+
+        /* 하단 Step 인디케이터 */
+        .roadmap-steps-nav {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 1.2rem;
+            gap: 0.5rem;
+        }
+
+        .step-dot {
+            flex: 1;
+            padding: 0.6rem 0.2rem;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            transition: all 0.2s;
+        }
+
+        .step-dot.active {
+            background: rgba(212, 163, 89, 0.15);
+            border-color: var(--primary-gold);
+            color: var(--primary-gold);
+            font-weight: bold;
+            box-shadow: var(--neumorph-outer);
+        }
+
+        /* =========================================================
+           7. 메인 화면 카드 및 타 섹션
            ========================================================= */
         .hero-banner {
-            background: linear-gradient(180deg, rgba(11,15,25,0.2) 0%, rgba(11,15,25,0.9) 100%),
+            background: linear-gradient(180deg, rgba(11,15,25,0.2) 0%, rgba(11,15,25,0.95) 100%),
                         url('https://placehold.co/1200x400/121826/d4a359?text=LOST+ARK+NEW+UPDATE') center/cover;
             border-radius: 20px;
-            padding: 4rem 2rem 2rem 2rem;
+            padding: 3.5rem 2rem 2rem 2rem;
             border: 1px solid var(--glass-border);
             box-shadow: var(--neumorph-outer);
-            margin-bottom: 2.5rem;
+            margin-bottom: 2rem;
             display: flex;
             flex-direction: column;
             justify-content: flex-end;
-            min-height: 320px;
+            min-height: 300px;
         }
 
         .hero-title {
-            font-size: 2.2rem;
+            font-size: 2rem;
             color: #fff;
             margin-bottom: 0.5rem;
             text-shadow: 0 2px 10px rgba(0,0,0,0.8);
@@ -298,7 +463,6 @@
             max-width: 600px;
         }
 
-        /* 메인화면 그리드 (공지사항/자유게시판 빠른이동) */
         .shortcut-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -319,7 +483,7 @@
 
         .glass-card:hover {
             border-color: var(--primary-gold);
-            transform: translateY(-5px);
+            transform: translateY(-4px);
         }
 
         .card-header {
@@ -332,7 +496,7 @@
         }
 
         .card-title {
-            font-size: 1.25rem;
+            font-size: 1.2rem;
             color: var(--primary-gold);
             display: flex;
             align-items: center;
@@ -344,7 +508,7 @@
             border: none;
             color: var(--text-muted);
             cursor: pointer;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
         }
 
         .more-link:hover {
@@ -378,6 +542,156 @@
         .preview-item-date {
             font-size: 0.85rem;
             color: var(--text-muted);
+        }
+
+        /* =========================================================
+           6-1. [로드맵 섹션] 커스텀 스타일 (6단계 인터랙티브 로드맵)
+           ========================================================= */
+        .roadmap-container {
+            margin-bottom: 2.5rem;
+            position: relative;
+        }
+
+        .roadmap-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .roadmap-interactive-card {
+            background: var(--bg-card-glass);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: var(--neumorph-outer);
+            position: relative;
+            overflow: hidden;
+            cursor: e-resize;
+            user-select: none;
+            min-height: 280px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: border-color 0.3s;
+        }
+
+        .roadmap-interactive-card:hover {
+            border-color: var(--accent-cyan);
+        }
+
+        /* 마우스 위치 힌트 오버레이 */
+        .roadmap-hint-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-gold), var(--accent-cyan));
+            transition: width 0.1s ease-out;
+            border-radius: 2px;
+        }
+
+        .roadmap-step-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            width: fit-content;
+            margin-bottom: 0.8rem;
+        }
+
+        .badge-present {
+            background: rgba(212, 163, 89, 0.2);
+            color: var(--primary-gold);
+            border: 1px solid var(--primary-gold);
+        }
+
+        .badge-future {
+            background: rgba(0, 242, 254, 0.15);
+            color: var(--accent-cyan);
+            border: 1px solid var(--accent-cyan);
+        }
+
+        .roadmap-slide {
+            display: none;
+            animation: slideIn 0.35s ease forwards;
+        }
+
+        .roadmap-slide.active {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(15px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .roadmap-slide-title {
+            font-size: 1.6rem;
+            color: #fff;
+            margin-bottom: 0.6rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .roadmap-slide-desc {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        .roadmap-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .roadmap-tag {
+            background: rgba(0,0,0,0.4);
+            border: 1px solid rgba(255,255,255,0.08);
+            padding: 0.25rem 0.61rem;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            color: var(--text-light);
+        }
+
+        /* 로드맵 단계별 하단 인디케이터 바 */
+        .roadmap-dots-nav {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.6rem;
+            margin-top: 1.2rem;
+        }
+
+        .roadmap-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .roadmap-dot.active {
+            background: var(--accent-cyan);
+            box-shadow: 0 0 10px var(--accent-cyan);
+            transform: scale(1.3);
+        }
+
+        .roadmap-controls-mobile {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 0.8rem;
         }
 
         /* =========================================================
@@ -435,7 +749,6 @@
             width: 180px;
         }
 
-        /* 테이블 스타일 */
         .custom-table {
             width: 100%;
             border-collapse: collapse;
@@ -479,9 +792,6 @@
             transform: translateY(-2px);
         }
 
-        /* =========================================================
-           8. 모달 (글쓰기 / 상세보기)
-           ========================================================= */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -531,9 +841,6 @@
             box-shadow: var(--neumorph-inner);
         }
 
-        /* =========================================================
-           9. 푸터
-           ========================================================= */
         footer {
             background: rgba(7, 10, 18, 0.95);
             border-top: 1px solid rgba(255, 255, 255, 0.05);
@@ -545,14 +852,18 @@
         }
 
         /* =========================================================
-           10. 모바일 레이아웃 최적화 (Responsive Design)
+           9. 모바일 레이아웃 최적화
            ========================================================= */
         @media (max-width: 768px) {
+            main {
+                padding: 1.5rem 1rem 1.5rem 1rem; /* 모바일에서는 여백 재조정 */
+            }
+
             .nav-desktop {
                 position: fixed;
                 top: 60px;
                 right: -100%;
-                width: 70%;
+                width: 75%;
                 height: calc(100vh - 60px);
                 background: var(--bg-card-glass);
                 backdrop-filter: blur(20px);
@@ -572,15 +883,15 @@
 
             .hero-banner {
                 padding: 2rem 1rem 1.5rem 1rem;
-                min-height: 240px;
+                min-height: 220px;
             }
 
             .hero-title {
-                font-size: 1.5rem;
+                font-size: 1.4rem;
             }
 
             .custom-table th:nth-child(3), .custom-table td:nth-child(3) {
-                display: none; /* 모바일에서 날짜 열 숨김으로 가독성 확보 */
+                display: none;
             }
 
             .event-drawer-wrapper {
@@ -588,20 +899,25 @@
                 bottom: 20px;
                 transform: none;
             }
+
+            .roadmap-container {
+                padding: 1.2rem;
+            }
+
+            .roadmap-card-title {
+                font-size: 1.25rem;
+            }
         }
     </style>
 </head>
 <body>
 
-    <!-- ==========================================
-         상단 네비게이션 바 (글래스모피즘 헤더)
-         ========================================== -->
+    <!-- 상단 네비게이션 헤더 -->
     <header class="header">
         <a href="#" class="logo" onclick="switchView('main-view')">
             <i class="fa-solid fa-shield-halved"></i> LOST ARK
         </a>
 
-        <!-- 데스크톱 & 모바일 겸용 네비게이션 메뉴 -->
         <nav class="nav-desktop" id="navMenu">
             <button class="nav-btn active" onclick="switchView('main-view', this)">
                 <i class="fa-solid fa-house"></i> 메인화면
@@ -614,15 +930,12 @@
             </button>
         </nav>
 
-        <!-- 모바일 토글 버튼 -->
         <button class="mobile-menu-btn" onclick="toggleMobileMenu()" aria-label="메뉴 열기">
             <i class="fa-solid fa-bars"></i>
         </button>
     </header>
 
-    <!-- ==========================================
-         좌측 슬라이드 패널: 진행 중인 이벤트 (2-3개)
-         ========================================== -->
+    <!-- 좌측 이벤트 슬라이드 드로어 (독립 레이어) -->
     <aside class="event-drawer-wrapper" id="eventDrawer">
         <div class="event-drawer-trigger" onclick="toggleEventDrawer()" role="button" tabindex="0" aria-label="진행중인 이벤트 보기">
             <i class="fa-solid fa-gift"></i> EVENT
@@ -632,7 +945,6 @@
                 <i class="fa-solid fa-fire"></i> 진행 중인 이벤트
             </h3>
             
-            <!-- 이벤트 카드 1 -->
             <div class="event-card">
                 <span class="event-badge">HOT</span>
                 <div class="event-title">아크라시아 카오스 게이트 오픈</div>
@@ -640,27 +952,23 @@
                 <div class="event-timer"><i class="fa-regular fa-clock"></i> 남은 시간: 12일 04시간</div>
             </div>
 
-            <!-- 이벤트 카드 2 -->
             <div class="event-card">
                 <span class="event-badge">NEW</span>
                 <div class="event-title">신규/복귀 모험가 출석부</div>
-                <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">매일 접속만 해도 벼련 재료 대량 지급</p>
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">매일 접속만 해도 재련 재료 대량 지급</p>
                 <div class="event-timer"><i class="fa-regular fa-clock"></i> 남은 시간: 25일 18시간</div>
             </div>
 
-            <!-- 이벤트 카드 3 -->
             <div class="event-card">
                 <span class="event-badge" style="background: rgba(212,163,89,0.2); color: var(--primary-gold);">ALWAYS</span>
                 <div class="event-title">주말 핫타임 버프 이벤트</div>
-                <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">전투 경험치 100% & 전투 실링 증대</p>
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">전투 경험치 100% & 실링 증대</p>
                 <div class="event-timer"><i class="fa-regular fa-clock"></i> 매주 주말 진행</div>
             </div>
         </div>
     </aside>
 
-    <!-- ==========================================
-         메인 영역 (SPA 형태: JS로 View 전환)
-         ========================================== -->
+    <!-- 메인 컨텐츠 영역 -->
     <main>
         <!-- 1. 메인화면 View -->
         <section id="main-view" class="view-section active">
@@ -674,9 +982,118 @@
                 </div>
             </div>
 
+            <!-- 미래 중심 6단계 인터랙티브 업데이트 로드맵 -->
+            <div class="roadmap-container">
+                <div class="roadmap-header">
+                    <h2 class="card-title" style="font-size: 1.4rem;">
+                        <i class="fa-solid fa-map-location-dot"></i> 2026-2027 로드맵 (마우스를 좌우로 움직여보세요)
+                    </h2>
+                    <span style="font-size: 0.85rem; color: var(--accent-cyan);">
+                        <i class="fa-solid fa-arrows-left-right"></i> Hover Interactive
+                    </span>
+                </div>
+
+                <div class="roadmap-interactive-card" id="roadmapCard" onmousemove="handleRoadmapMouseMove(event)" onmouseleave="resetRoadmapHint()">
+                    <!-- 상단 실시간 마우스 가이드 게이지 -->
+                    <div class="roadmap-hint-bar" id="roadmapHintBar" style="width: 16.66%;"></div>
+
+                    <!-- Step 0 (현재 / Present) -->
+                    <div class="roadmap-slide active" data-step="0">
+                        <span class="roadmap-step-badge badge-present"><i class="fa-solid fa-circle-play"></i> Step 0 · 현재 진행 중</span>
+                        <h3 class="roadmap-slide-title">카제로스 레이드 2막 '부유하는 패자의 혼'</h3>
+                        <p class="roadmap-slide-desc">심연의 군주 카제로스와의 격전이 본격화됩니다. T4 장비 재련 최적화 및 신규 아크 패시브 시스템 정착 업데이트 완료!</p>
+                        <div class="roadmap-tags">
+                            <span class="roadmap-tag">#카제로스2막</span>
+                            <span class="roadmap-tag">#T4라이브</span>
+                            <span class="roadmap-tag">#아크패시브</span>
+                        </div>
+                    </div>
+
+                    <!-- Step 1 (미래 1) -->
+                    <div class="roadmap-slide" data-step="1">
+                        <span class="roadmap-step-badge badge-future"><i class="fa-solid fa-clock"></i> Step 1 · 다가오는 업데이트</span>
+                        <h3 class="roadmap-slide-title">신규 대륙 '쿠르잔 북부' & 시공의 균열</h3>
+                        <p class="roadmap-slide-desc">붉은 심연의 기운이 뒤덮인 쿠르잔 북부 대륙이 열립니다. 새로운 필드 보스와 세계관 최강의 시공 균열 던전에 도전하세요.</p>
+                        <div class="roadmap-tags">
+                            <span class="roadmap-tag">#쿠르잔북부</span>
+                            <span class="roadmap-tag">#시공의균열</span>
+                            <span class="roadmap-tag">#신규필드보스</span>
+                        </div>
+                    </div>
+
+                    <!-- Step 2 (미래 2) -->
+                    <div class="roadmap-slide" data-step="2">
+                        <span class="roadmap-step-badge badge-future"><i class="fa-solid fa-bolt"></i> Step 2 · 업데이트 예정</span>
+                        <h3 class="roadmap-slide-title">초각성(Hyper Awakening) 2차 & 어비스 던전</h3>
+                        <p class="roadmap-slide-desc">클래스 한계를 뛰어넘는 2차 초각성 스킬이 개방됩니다. 4인 최고 난이도 신규 어비스 던전 '태초의 요람' 출시 예정.</p>
+                        <div class="roadmap-tags">
+                            <span class="roadmap-tag">#초각성2차</span>
+                            <span class="roadmap-tag">#태초의요람</span>
+                            <span class="roadmap-tag">#스킬개편</span>
+                        </div>
+                    </div>
+
+                    <!-- Step 3 (미래 3) -->
+                    <div class="roadmap-slide" data-step="3">
+                        <span class="roadmap-step-badge badge-future"><i class="fa-solid fa-shirt"></i> Step 3 · 개발 진행 중</span>
+                        <h3 class="roadmap-slide-title">전설 아바타 Season 3 & 젠더락 클래스</h3>
+                        <p class="roadmap-slide-desc">차원이 다른 이펙트의 시즌 3 전설 아바타 '영원의 서막'과 함께 많은 모험가들이 기다린 신규 젠더락 스페셜리스트 클래스가 등장합니다.</p>
+                        <div class="roadmap-tags">
+                            <span class="roadmap-tag">#전설아바타S3</span>
+                            <span class="roadmap-tag">#신규클래스</span>
+                            <span class="roadmap-tag">#외형커스텀</span>
+                        </div>
+                    </div>
+
+                    <!-- Step 4 (미래 4) -->
+                    <div class="roadmap-slide" data-step="4">
+                        <span class="roadmap-step-badge badge-future"><i class="fa-solid fa-dragon"></i> Step 4 · 먼 미래 예정</span>
+                        <h3 class="roadmap-slide-title">카제로스 레이드 3막 '종막 : 심연의 군주'</h3>
+                        <p class="roadmap-slide-desc">아크라시아의 운명을 건 최종 결전! 심연의 군주 카제로스와의 마지막 대혈전이 거대한 인게임 이벤트와 함께 찾아옵니다.</p>
+                        <div class="roadmap-tags">
+                            <span class="roadmap-tag">#카제로스3막</span>
+                            <span class="roadmap-tag">#최종결전</span>
+                            <span class="roadmap-tag">#아크라시아의운명</span>
+                        </div>
+                    </div>
+
+                    <!-- Step 5 (미래 5) -->
+                    <div class="roadmap-slide" data-step="5">
+                        <span class="roadmap-step-badge badge-future"><i class="fa-solid fa-star"></i> Step 5 · 미래 비전</span>
+                        <h3 class="roadmap-slide-title">영지/라이프 대확장 & 2027 로아온 프로젝트</h3>
+                        <p class="roadmap-slide-desc">모험가 간 영지 교류 및 라이프 콘텐츠 개편. 2027 로아온에서 최초 공개될 차세대 신규 콘텐츠 프로젝트가 준비 중입니다.</p>
+                        <div class="roadmap-tags">
+                            <span class="roadmap-tag">#영지대확장</span>
+                            <span class="roadmap-tag">#라이프개편</span>
+                            <span class="roadmap-tag">#2027로아온</span>
+                        </div>
+                    </div>
+
+                    <!-- 하단 네비게이션 도트 (6단계) -->
+                    <div class="roadmap-dots-nav">
+                        <button class="roadmap-dot active" onclick="setRoadmapStep(0)" aria-label="Step 0 보기"></button>
+                        <button class="roadmap-dot" onclick="setRoadmapStep(1)" aria-label="Step 1 보기"></button>
+                        <button class="roadmap-dot" onclick="setRoadmapStep(2)" aria-label="Step 2 보기"></button>
+                        <button class="roadmap-dot" onclick="setRoadmapStep(3)" aria-label="Step 3 보기"></button>
+                        <button class="roadmap-dot" onclick="setRoadmapStep(4)" aria-label="Step 4 보기"></button>
+                        <button class="roadmap-dot" onclick="setRoadmapStep(5)" aria-label="Step 5 보기"></button>
+                    </div>
+                </div>
+
+                <!-- 모바일 전용 이전/다음 버튼 -->
+                <div class="roadmap-controls-mobile">
+                    <button class="btn-action" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;" onclick="prevRoadmapStep()">
+                        <i class="fa-solid fa-chevron-left"></i> 이전 단계
+                    </button>
+                    <span id="roadmapStepText" style="font-size: 0.85rem; color: var(--primary-gold);">1 / 6 단계</span>
+                    <button class="btn-action" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;" onclick="nextRoadmapStep()">
+                        다음 단계 <i class="fa-solid fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+
             <!-- 공지사항 및 자유게시판 프리뷰 카드 -->
             <div class="shortcut-grid">
-                <!-- 공지사항 미리보기 -->
                 <div class="glass-card">
                     <div class="card-header">
                         <h2 class="card-title"><i class="fa-solid fa-scroll"></i> 최신 공지사항</h2>
@@ -684,21 +1101,20 @@
                     </div>
                     <ul class="preview-list">
                         <li class="preview-item" onclick="switchView('notice-view')">
-                            <span class="preview-item-title">[점검] 10월 30일(목) 정기점검 안내</span>
+                            <span class="preview-item-title">[점검] 정기점검 및 시스템 안정화 작업</span>
                             <span class="preview-item-date">10.29</span>
                         </li>
                         <li class="preview-item" onclick="switchView('notice-view')">
-                            <span class="preview-item-title">[업데이트] 클래스 밸런스 패치 노트</span>
+                            <span class="preview-item-title">[패치] 클래스 밸런스 및 편의성 패치</span>
                             <span class="preview-item-date">10.25</span>
                         </li>
                         <li class="preview-item" onclick="switchView('notice-view')">
-                            <span class="preview-item-title">[이벤트] 가을맞이 럭키 드로우 당첨자 발표</span>
+                            <span class="preview-item-title">[이벤트] 가을맞이 럭키 드로우 당첨 발표</span>
                             <span class="preview-item-date">10.20</span>
                         </li>
                     </ul>
                 </div>
 
-                <!-- 자유게시판 미리보기 -->
                 <div class="glass-card">
                     <div class="card-header">
                         <h2 class="card-title"><i class="fa-solid fa-fire-flame-curved"></i> 인기 게시글</h2>
@@ -706,15 +1122,15 @@
                     </div>
                     <ul class="preview-list">
                         <li class="preview-item" onclick="switchView('board-view')">
-                            <span class="preview-item-title">이번 신규 레이드 트라이 팟 구합니다!</span>
+                            <span class="preview-item-title">이번 신규 레이드 공략 핵심 요약</span>
                             <span class="preview-item-date">14:20</span>
                         </li>
                         <li class="preview-item" onclick="switchView('board-view')">
-                            <span class="preview-item-title">커스텀 아바타 세팅 공유해드림 (스샷유)</span>
+                            <span class="preview-item-title">커스텀 아바타 세팅 공유합니다!</span>
                             <span class="preview-item-date">12:05</span>
                         </li>
                         <li class="preview-item" onclick="switchView('board-view')">
-                            <span class="preview-item-title">초보를 위한 각인 효율 완벽 정리</span>
+                            <span class="preview-item-title">초보자를 위한 효율적인 스펙업 루트</span>
                             <span class="preview-item-date">10.28</span>
                         </li>
                     </ul>
@@ -744,9 +1160,7 @@
                             <th style="width: 20%;">작성일</th>
                         </tr>
                     </thead>
-                    <tbody id="noticeTableBody">
-                        <!-- JS로 동적 생성 및 필터링됨 -->
-                    </tbody>
+                    <tbody id="noticeTableBody"></tbody>
                 </table>
             </div>
         </section>
@@ -775,17 +1189,13 @@
                             <th style="width: 15%;">작성일</th>
                         </tr>
                     </thead>
-                    <tbody id="boardTableBody">
-                        <!-- JS로 동적 생성 및 검색 처리 -->
-                    </tbody>
+                    <tbody id="boardTableBody"></tbody>
                 </table>
             </div>
         </section>
     </main>
 
-    <!-- ==========================================
-         글쓰기 모달 (Modal)
-         ========================================== -->
+    <!-- 글쓰기 모달 -->
     <div class="modal-overlay" id="writeModal">
         <div class="modal-content">
             <h3 style="color: var(--primary-gold); margin-bottom: 1rem;"><i class="fa-solid fa-pen-to-square"></i> 게시글 작성</h3>
@@ -816,62 +1226,8 @@
         <p style="margin-top: 0.5rem; color: #6b7280;">본 페이지는 초보자 학습 및 포트폴리오 목적으로 재구성된 시안 웹사이트입니다.</p>
     </footer>
 
-    <!-- ==========================================
-         JavaScript 로직 (초보자 쉬운 주석 포함)
-         ========================================== -->
+    <!-- 자바스크립트 로직 -->
     <script>
-        /* -------------------------------------------------------------
-           1. 공지사항 및 게시판 샘플 데이터 설정
-           ------------------------------------------------------------- */
-        const noticeData = [
-            { id: 1, category: 'maint', type: '점검', title: '10월 30일(목) 정기점검 및 서비스 안정화 작업 안내', date: '2026.10.29' },
-            { id: 2, category: 'update', type: '업데이트', title: '클래스 밸런스 패치 및 편의성 개선 사항 적용', date: '2026.10.25' },
-            { id: 3, category: 'notice', type: '공지', title: '불법 프로그램 사용 제재 내역 34차 안내', date: '2026.10.22' },
-            { id: 4, category: 'update', type: '업데이트', title: '신규 군단장 레이드 난이도 조율 및 보상 변경', date: '2026.10.15' }
-        ];
-
-        let boardData = [
-            { id: 3, title: '이번 신규 레이드 트라이 팟 구합니다! (바드/홀나 환영)', author: '빛의수호자', date: '14:20' },
-            { id: 2, title: '커스텀 아바타 세팅 공유해드림 (스샷 첨부)', author: '아크라시아패셔니스타', date: '12:05' },
-            { id: 1, title: '초보를 위한 각인 효율 완벽 정리 가이드', author: '고인물강아지', date: '2026.10.28' }
-        ];
-
-        /* -------------------------------------------------------------
-           2. SPA View (페이지) 전환 로직
-           ------------------------------------------------------------- */
-        function switchView(viewId, targetBtn = null) {
-            // 모든 섹션 숨기기
-            const sections = document.querySelectorAll('.view-section');
-            sections.forEach(sec => sec.classList.remove('active'));
-
-            // 선택된 섹션 보이기
-            const activeSection = document.getElementById(viewId);
-            if (activeSection) {
-                activeSection.classList.add('active');
-            }
-
-            // 상단 버튼 Active 클래스 관리
-            if (targetBtn) {
-                const navBtns = document.querySelectorAll('.nav-btn');
-                navBtns.forEach(btn => btn.classList.remove('active'));
-                targetBtn.classList.add('active');
-            }
-
-            // 모바일 메뉴가 열려있다면 닫기
-            document.getElementById('navMenu').classList.remove('mobile-open');
-
-            // 페이지 상단으로 부드럽게 스크롤 이동
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        /* -------------------------------------------------------------
-           3. 모바일 네비게이션 드로어 토글
-           ------------------------------------------------------------- */
-        function toggleMobileMenu() {
-            const navMenu = document.getElementById('navMenu');
-            navMenu.classList.toggle('mobile-open');
-        }
-
         /* -------------------------------------------------------------
            4. 좌측 이벤트 패널 토글 (터치/클릭 대응)
            ------------------------------------------------------------- */
@@ -881,8 +1237,227 @@
         }
 
         /* -------------------------------------------------------------
+           4-1. 6단계 인터랙티브 로드맵 마우스/터치 컨트롤 로직
+           ------------------------------------------------------------- */
+        let currentRoadmapStep = 0;
+        const totalRoadmapSteps = 6;
+
+        function setRoadmapStep(stepIndex) {
+            if (stepIndex < 0) stepIndex = 0;
+            if (stepIndex >= totalRoadmapSteps) stepIndex = totalRoadmapSteps - 1;
+
+            currentRoadmapStep = stepIndex;
+
+            // 모든 슬라이드 숨기고 해당 스텝만 활성화
+            const slides = document.querySelectorAll('.roadmap-slide');
+            slides.forEach((slide, idx) => {
+                slide.classList.toggle('active', idx === stepIndex);
+            });
+
+            // 도트 인디케이터 업데이트
+            const dots = document.querySelectorAll('.roadmap-dot');
+            dots.forEach((dot, idx) => {
+                dot.classList.toggle('active', idx === stepIndex);
+            });
+
+            // 게이지 바 업데이트
+            const hintBar = document.getElementById('roadmapHintBar');
+            if (hintBar) {
+                const percent = ((stepIndex + 1) / totalRoadmapSteps) * 100;
+                hintBar.style.width = `${percent}%`;
+            }
+
+            // 모바일 텍스트 표시 업데이트
+            const stepText = document.getElementById('roadmapStepText');
+            if (stepText) {
+                stepText.textContent = `${stepIndex + 1} / ${totalRoadmapSteps} 단계`;
+            }
+        }
+
+        function handleRoadmapMouseMove(event) {
+            const card = document.getElementById('roadmapCard');
+            if (!card) return;
+
+            const rect = card.getBoundingClientRect();
+            const mouseX = event.clientX - rect.left;
+            const cardWidth = rect.width;
+
+            // 카드 영역을 6등분하여 마우스 위치에 맞춰 스텝 전환
+            let ratio = mouseX / cardWidth;
+            if (ratio < 0) ratio = 0;
+            if (ratio >= 1) ratio = 0.99;
+
+            const calculatedStep = Math.floor(ratio * totalRoadmapSteps);
+            if (calculatedStep !== currentRoadmapStep) {
+                setRoadmapStep(calculatedStep);
+            }
+        }
+
+        function resetRoadmapHint() {
+            // 마우스가 영역을 벗어나면 현재 활성화된 스텝 게이지 유지
+            setRoadmapStep(currentRoadmapStep);
+        }
+
+        function prevRoadmapStep() {
+            setRoadmapStep(currentRoadmapStep - 1);
+        }
+
+        function nextRoadmapStep() {
+            setRoadmapStep(currentRoadmapStep + 1);
+        }
+
+        /* -------------------------------------------------------------
            5. 공지사항 데이터 동적 렌더링 & 필터링
            ------------------------------------------------------------- */
+        const roadmapSteps = [
+            {
+                status: 'tag-present',
+                statusText: 'NOW LIVE • 현재 진행 중',
+                title: '카제로스 레이드 2막 : 부유하는 패자의 혼',
+                desc: '심연의 군단과의 본격적인 대전투가 개막되었습니다. 새로운 에픽 엘릭서 수급 및 신규 장비 재련 시스템이 탑재되었습니다.',
+                date: '2026.10 LIVE'
+            },
+            {
+                status: 'tag-future',
+                statusText: 'NEXT STEP 1 • 11월 예정',
+                title: '신규 대륙 [쿠르잔 북부] & 시공의 균열',
+                desc: '아크라시아의 운명을 건 마지막 대륙 개척. 새로운 시공간 단절 던전과 보상 시스템이 모험가를 기다립니다.',
+                date: '2026년 11월 중순 업데이트'
+            },
+            {
+                status: 'tag-future',
+                statusText: 'NEXT STEP 2 • 12월 예정',
+                title: '초각성(Super Awakening) 2차 패치',
+                desc: '전 클래스 초각성 스킬 스킬트리 획기적 개편 및 스펙트럼 아우라 효과 전면 적용 예정.',
+                date: '2026년 12월 겨울 대규모 업데이트'
+            },
+            {
+                status: 'tag-future',
+                statusText: 'NEXT STEP 3 • 2027 COMING SOON',
+                title: '3차 전설 아바타 & 공간 전이 항해',
+                desc: '새로운 룩앤필을 자아내는 전설 아바타 시즌3 출시 및 전 대륙 자유 항해 인터페이스 혁신.',
+                date: '2027년 1분기 공개 예정'
+            }
+        ];
+
+        let currentRoadmapIndex = 0; // 현재 선택된 로드맵 인덱스
+
+        /* -------------------------------------------------------------
+           2. 마우스 이동에 따른 미래 로드맵 스위칭 로직
+           ------------------------------------------------------------- */
+        function handleRoadmapHover(e) {
+            const container = document.getElementById('roadmapBox');
+            const rect = container.getBoundingClientRect();
+            
+            // 마우스 커서의 X 좌표 비율 (0.0 ~ 1.0) 계산
+            const mouseX = e.clientX - rect.left;
+            const ratio = Math.max(0, Math.min(1, mouseX / rect.width));
+
+            // 비율에 따라 4단계로 슬라이싱 (0: 현재, 1~3: 미래 단계)
+            let index = 0;
+            if (ratio > 0.75) index = 3;
+            else if (ratio > 0.5) index = 2;
+            else if (ratio > 0.25) index = 1;
+
+            // 프로그래스 바 피드백 수치 조정
+            document.getElementById('roadmapProgress').style.width = (ratio * 100) + '%';
+
+            // 인덱스 변경 시에만 UI 업데이트
+            if (index !== currentRoadmapIndex) {
+                currentRoadmapIndex = index;
+                updateRoadmapUI(index);
+            }
+        }
+
+        /* 로드맵 UI 업데이트 함수 */
+        function updateRoadmapUI(index) {
+            const data = roadmapSteps[index];
+            const contentBox = document.getElementById('roadmapContent');
+
+            // 텍스트 변경 시 자연스러운 전환 애니메이션
+            contentBox.classList.add('fade-change');
+
+            setTimeout(() => {
+                contentBox.innerHTML = `
+                    <div class="roadmap-status-tag ${data.status}">
+                        <i class="fa-solid fa-sparkles"></i> ${data.statusText}
+                    </div>
+                    <div class="roadmap-card-title">${data.title}</div>
+                    <div class="roadmap-card-desc">${data.desc}</div>
+                    <div class="roadmap-card-date"><i class="fa-regular fa-calendar-check"></i> ${data.date}</div>
+                `;
+                contentBox.classList.remove('fade-change');
+            }, 150);
+
+            // 하단 Dot 활성화 변경
+            for (let i = 0; i < 4; i++) {
+                const dot = document.getElementById(`dot${i}`);
+                if (i === index) {
+                    dot.classList.add('active');
+                } else {
+                    dot.classList.remove('active');
+                }
+            }
+
+            // 안내 힌트 텍스트 변경
+            const hint = document.getElementById('roadmapHint');
+            if (index === 0) {
+                hint.innerHTML = `<i class="fa-solid fa-arrow-right"></i> 우측으로 마우스를 이동하여 미래 업데이트 확인`;
+            } else {
+                hint.innerHTML = `<i class="fa-solid fa-angles-right"></i> 미래 업데이트 미리보기 중 (Step ${index}/3)`;
+            }
+        }
+
+        /* 마우스가 벗어났을 때 현재(Present) 상태로 초기화 */
+        function resetRoadmap() {
+            currentRoadmapIndex = 0;
+            document.getElementById('roadmapProgress').style.width = '0%';
+            updateRoadmapUI(0);
+        }
+
+        /* -------------------------------------------------------------
+           3. 공지사항 & 자유게시판 데이터 및 렌더링
+           ------------------------------------------------------------- */
+        const noticeData = [
+            { id: 1, category: 'maint', type: '점검', title: '10월 30일(목) 정기점검 및 서비스 안정화 작업 안내', date: '2026.10.29' },
+            { id: 2, category: 'update', type: '업데이트', title: '클래스 밸런스 패치 및 편의성 개선 사항 적용', date: '2026.10.25' },
+            { id: 3, category: 'notice', type: '공지', title: '불법 프로그램 사용 제재 내역 34차 안내', date: '2026.10.22' },
+            { id: 4, category: 'update', type: '업데이트', title: '신규 군단장 레이드 난이도 조율 및 보상 변경', date: '2026.10.15' }
+        ];
+
+        let boardData = [
+            { id: 3, title: '이번 신규 레이드 공략 핵심 요약 (바드/홀나 시점)', author: '빛의수호자', date: '14:20' },
+            { id: 2, title: '커스텀 아바타 세팅 공유합니다! (스샷 유)', author: '아크라시아패셔니스타', date: '12:05' },
+            { id: 1, title: '초보자를 위한 효율적인 스펙업 루트 가이드', author: '고인물강아지', date: '2026.10.28' }
+        ];
+
+        function switchView(viewId, targetBtn = null) {
+            const sections = document.querySelectorAll('.view-section');
+            sections.forEach(sec => sec.classList.remove('active'));
+
+            const activeSection = document.getElementById(viewId);
+            if (activeSection) {
+                activeSection.classList.add('active');
+            }
+
+            if (targetBtn) {
+                const navBtns = document.querySelectorAll('.nav-btn');
+                navBtns.forEach(btn => btn.classList.remove('active'));
+                targetBtn.classList.add('active');
+            }
+
+            document.getElementById('navMenu').classList.remove('mobile-open');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function toggleMobileMenu() {
+            document.getElementById('navMenu').classList.toggle('mobile-open');
+        }
+
+        function toggleEventDrawer() {
+            document.getElementById('eventDrawer').classList.toggle('open');
+        }
+
         function renderNotices(filter = 'all') {
             const tbody = document.getElementById('noticeTableBody');
             tbody.innerHTML = '';
@@ -903,17 +1478,12 @@
         }
 
         function filterNotice(category, btnElement) {
-            // 필터 버튼 활성화 표시
             const filterBtns = document.querySelectorAll('.filter-tabs .filter-btn');
             filterBtns.forEach(b => b.classList.remove('active'));
             btnElement.classList.add('active');
-
             renderNotices(category);
         }
 
-        /* -------------------------------------------------------------
-           6. 자유게시판 동적 렌더링 & 검색 로직
-           ------------------------------------------------------------- */
         function renderBoard(dataToRender = boardData) {
             const tbody = document.getElementById('boardTableBody');
             tbody.innerHTML = '';
@@ -939,9 +1509,6 @@
             renderBoard(filtered);
         }
 
-        /* -------------------------------------------------------------
-           7. 모달 처리 (글쓰기 창 열기/닫기/등록)
-           ------------------------------------------------------------- */
         function openWriteModal() {
             document.getElementById('writeModal').classList.add('active');
         }
@@ -951,12 +1518,10 @@
         }
 
         function handleWriteSubmit(event) {
-            event.preventDefault(); // 폼 제출 시 페이지 새로고침 방지
-
+            event.preventDefault();
             const title = document.getElementById('postTitle').value;
             const author = document.getElementById('postAuthor').value;
 
-            // 새로운 게시글 데이터 생성 후 최상단에 추가
             const newPost = {
                 id: boardData.length + 1,
                 title: title,
@@ -964,20 +1529,18 @@
                 date: '방금 전'
             };
 
-            boardData.unshift(newPost); // 배열 제일 앞에 추가
-            renderBoard(); // 테이블 다시 그리기
-            closeWriteModal(); // 모달 닫기
+            boardData.unshift(newPost);
+            renderBoard();
+            closeWriteModal();
 
-            // Input 입력값 초기화
             document.getElementById('postTitle').value = '';
             document.getElementById('postAuthor').value = '';
             document.getElementById('postContent').value = '';
         }
 
-        /* -------------------------------------------------------------
-           8. 페이지 초기화 시 호출
-           ------------------------------------------------------------- */
+        /* 초기화 */
         window.onload = function() {
+            updateRoadmapUI(0);
             renderNotices();
             renderBoard();
         };
